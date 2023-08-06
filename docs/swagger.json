@@ -1,0 +1,955 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Swagger Movies - OpenAPI 3.0",
+    "description": "This API provides endpoints to access and manage data from the movies database. It provides endpoints to retrieve, add, update, and delete information. It requires authentication for certain operations, and certain endpoints are accessible only to users with admin privileges.",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "email": "apiteam@swagger.io"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.11"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "authentication"
+        ],
+        "summary": "Register a new user",
+        "description": "This endpoint allows users to register and create a new account for authentication. Users need to provide their email, gender, password, and role in the request body to complete the registration process.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "testuser3@example.com"
+                  },
+                  "gender": {
+                    "type": "string",
+                    "example": "Male"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "Secr3tP@ss"
+                  },
+                  "role": {
+                    "type": "string",
+                    "example": "Admin"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User registration successful."
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "email": {
+                          "type": "string",
+                          "example": "testuser3@example.com"
+                        },
+                        "gender": {
+                          "type": "string",
+                          "example": "Male"
+                        },
+                        "role": {
+                          "type": "string",
+                          "example": "Admin"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "authentication"
+        ],
+        "summary": "Authenticate a user",
+        "description": "This endpoint allows users to log in by providing their email and password. The server will validate the login credentials, and if successful, a JSON Web Token (JWT) will be returned, granting access to protected routes within the API.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "testuser3@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "Secr3tP@ss"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Login successful."
+                    },
+                    "token": {
+                      "type": "string",
+                      "example": "<generated-token>"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid Credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvalidCredentials"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserNotFound"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/movies": {
+      "get": {
+        "tags": [
+          "movies"
+        ],
+        "summary": "Display list of movies",
+        "description": "This endpoint retrieves a list of movies available in the database. It returns a paginated list of movie data including their titles, genres, and year.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/movies"
+                      }
+                    },
+                    "totalData": {
+                      "type": "integer",
+                      "example": 101
+                    },
+                    "totalPages": {
+                      "type": "integer",
+                      "example": 11
+                    },
+                    "next": {
+                      "type": "integer",
+                      "example": 2
+                    },
+                    "previous": {
+                      "type": "integer",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "movies"
+        ],
+        "summary": "Add a new movie",
+        "description": "This endpoint allows users with the appropriate permissions to create a new movie in the database. The request should include the necessary information, such as the movie title, genres, and year, to add a new movie entry to the collection of movies.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Interstellar"
+                  },
+                  "genres": {
+                    "type": "string",
+                    "example": "Sci-Fi|Adventure|Drama"
+                  },
+                  "year": {
+                    "type": "string",
+                    "example": 2014
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Movie record created successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/movies/{id}": {
+      "get": {
+        "tags": [
+          "movies"
+        ],
+        "summary": "Display specific movie based on id",
+        "description": "This endpoint retrieves the details of a specific movie from the database based on the provided movie ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/movies"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorNotFound"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "movies"
+        ],
+        "summary": "Update specific movie based on id",
+        "description": "This endpoint allows users with the appropriate permissions to update the details of a specific movie identified by its unique ID. The request should include the updated movie data in the request body.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Interstellar"
+                  },
+                  "genres": {
+                    "type": "string",
+                    "example": "Sci-Fi|Adventure|Drama"
+                  },
+                  "year": {
+                    "type": "string",
+                    "example": 2014
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Data updated successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorNotFound"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "movies"
+        ],
+        "summary": "Delete specific movie based on id",
+        "description": "This endpoint allows users with the appropriate permissions to delete a movie record identified by the provided ID. Upon successful execution, the movie with the corresponding ID will be removed from the database.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Data deleted successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorNotFound"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Display list of users",
+        "description": "This endpoint allows users with the appropriate permissions to access and retrieve information about all registered users in the system.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/users"
+                      }
+                    },
+                    "totalData": {
+                      "type": "integer",
+                      "example": 103
+                    },
+                    "totalPages": {
+                      "type": "integer",
+                      "example": 11
+                    },
+                    "next": {
+                      "type": "integer",
+                      "example": 2
+                    },
+                    "previous": {
+                      "type": "integer",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Display specific user based on id",
+        "description": "This endpoint allows users with the appropriate permissions to retrieve user data based on the provided user ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/users"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorNotFound"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Update specific user based on id",
+        "description": "This endpoint allows users with the appropriate permissions to update specific user information identified by their unique ID. The request should include the updated user data in the request body.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "updated123@gmail.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Data updated successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorNotFound"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Delete specific user based on id",
+        "description": "This endpoint allows users with the appropriate permissions to remove a specific user from the system based on the provided ID. Upon successful execution, the user with the corresponding ID will be removed from the database.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Data deleted successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorNotFound"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserNotFound": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "User with the provided email not found."
+          }
+        }
+      },
+      "InvalidCredentials": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Invalid email or password."
+          }
+        }
+      },
+      "AuthenticationError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Authentication failed. Please check your credentials."
+          }
+        }
+      },
+      "ErrorNotFound": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "The requested data could not be found."
+          }
+        }
+      },
+      "AuthorizationError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "You are not allowed to perform this action."
+          }
+        }
+      },
+      "movies": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "example": "Reckless"
+          },
+          "genres": {
+            "type": "string",
+            "example": "Comedy|Drama|Romance"
+          },
+          "year": {
+            "type": "string",
+            "example": 2001
+          }
+        }
+      },
+      "users": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "email": {
+            "type": "string",
+            "example": "oainger0@craigslist.org"
+          },
+          "gender": {
+            "type": "string",
+            "example": "Female"
+          },
+          "password": {
+            "type": "string",
+            "example": "KcAk6Mrg7DRM"
+          },
+          "role": {
+            "type": "string",
+            "example": "Construction Worker"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
